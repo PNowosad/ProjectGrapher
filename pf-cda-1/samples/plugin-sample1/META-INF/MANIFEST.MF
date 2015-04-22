@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Implementation-Title: PF-CDA-Plugin-Sample1
+Implementation-Version: 1.0.0
+Specification-Vendor: Manfred Duchrow Consulting & Software
+Built-By: M.Duchrow
+Created-By: Apache Maven 3.0.4
+Build-Date: 2014-04-06
+Implementation-Vendor: Manfred Duchrow Consulting & Software
+Implementation-Vendor-Id: org.pfsw
+Build-Jdk: 1.6.0_41
+Specification-Title: PF-CDA-Plugin-Sample1
+Specification-Version: 1.0.0
+Archiver-Version: Plexus Archiver
+

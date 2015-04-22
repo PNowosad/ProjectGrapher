@@ -7,13 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.POST;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import org.glassfish.jersey.client.ClientResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,11 +28,11 @@ public abstract class ProjectObject {
 		DELETE
 	}
 	
-	private WebTarget rootTarget;
+//	private WebTarget rootTarget;
 	private WebTarget nodeTarget;
 	private WebTarget labelsTarget;
 	
-	protected String nodeID;
+	protected int nodeID;
 	protected Map<String, String> properties;
 	protected List<String> labels;
 	
@@ -41,32 +40,32 @@ public abstract class ProjectObject {
 	 * 
 	 */
 	public ProjectObject(WebTarget rootTarget) {
-		this.rootTarget = rootTarget;
+//		this.rootTarget = rootTarget;
 		
 		nodeTarget = rootTarget.path("node");
 	}
 	
-	protected ClientResponse sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
-		Invocation.Builder builder = target.request();
+	protected Response sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
+		Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE);
 		
 		Entity<String> requestEntity = Entity.entity(json.toString(), MediaType.APPLICATION_JSON_TYPE);
-		ClientResponse response = null;
+		Response response = null;
 		
 		switch (method) {
 		case GET:
-			response = builder.get(ClientResponse.class);
+			response = builder.get();
 			break;
 
 		case POST:
-			response = builder.post(requestEntity, ClientResponse.class);
+			response = builder.post(requestEntity);
 			break;
 		
 		case PUT:
-			response = builder.put(requestEntity, ClientResponse.class);
+			response = builder.put(requestEntity);
 			break;
 			
 		case DELETE:
-			response = builder.delete(ClientResponse.class);
+			response = builder.delete();
 			break;
 		}
 		
@@ -78,12 +77,12 @@ public abstract class ProjectObject {
 		
 		JSONObject propertiesJSON = new JSONObject(this.properties);
 		
-		ClientResponse response = sendRequestToTargetWithJSON(nodeTarget, propertiesJSON, HttpRequestMethod.POST);
+		Response response = sendRequestToTargetWithJSON(nodeTarget, propertiesJSON, HttpRequestMethod.POST);
 		
 		JSONObject responseJSON = new JSONObject(response.readEntity(String.class));
 		JSONObject metadataJSON = responseJSON.getJSONObject("metadata");
-		nodeID = metadataJSON.getString("id");
-		labelsTarget = nodeTarget.path(nodeID).path("labels");
+		nodeID = metadataJSON.getInt("id");
+		labelsTarget = nodeTarget.path(Integer.toString(nodeID)).path("labels");
 	}
 	
 	public List<String> getLabels() {

@@ -35,14 +35,18 @@ public class Neo4jExporter extends AModelExporter {
 	
 	private String commitTransactionUrl;
 	
-	private String currentContextName = "";
 	private Map<String, ProjectClass> classMap;
 	
 	/**
 	 * 
 	 */
 	public Neo4jExporter() {
-		// TODO Auto-generated constructor stub
+		System.out.println("Neo4jExporter created!");
+		
+		webClient = ClientBuilder.newClient();
+		rootTarget = webClient.target(SERVER_ROOT_URI);
+		
+		classMap = new HashMap<String, ProjectClass>();
 	}
 
 	/* (non-Javadoc)
@@ -66,11 +70,7 @@ public class Neo4jExporter extends AModelExporter {
 	 */
 	@Override
 	public boolean initialize(PluginConfiguration arg0) {
-		webClient = ClientBuilder.newClient();
-		rootTarget = webClient.target(SERVER_ROOT_URI);
-		
-		classMap = new HashMap<String, ProjectClass>();
-		
+
 		return true;
 	}
 	
@@ -92,21 +92,19 @@ public class Neo4jExporter extends AModelExporter {
 	
 	@Override
 	public boolean startContext(IExplorationContext context) {
-		currentContextName = context.getName();
 		
 		return super.startContext(context);
 	}
 	
 	@Override
 	public boolean finishContext(IExplorationContext context) {
-		currentContextName = "";
 		
 		return super.finishContext(context);
 	}
 
 	@Override
 	public boolean startType(IType type) {
-		ProjectClass newClass = new ProjectClass(rootTarget, type, currentContextName);
+		ProjectClass newClass = new ProjectClass(rootTarget, type);
 		classMap.put(type.getName(), newClass);
 		
 		return super.startType(type);
