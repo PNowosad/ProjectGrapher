@@ -2,5 +2,16 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf-cda-base-xpi.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf-cda-swing-xpi.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf-odem.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jersey-client.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jersey-common.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jersey-media-jaxb.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jersey-container-servlet-core.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jersey-container-servlet.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jersey-server.jar"/>
+	<classpathentry kind="lib" path="libs/json-20141113.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
