@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.pfsw.odem.IExplorationModelObject;
 
 /**
  * @author Paweł Nowosad
@@ -32,17 +33,23 @@ public abstract class ProjectObject {
 	private WebTarget nodeTarget;
 	private WebTarget labelsTarget;
 	
-	protected int nodeID;
+	public String nodeID;
+	public String name;
+	public String contextName;
+	
 	protected Map<String, String> properties;
 	protected List<String> labels;
 	
 	/**
 	 * 
 	 */
-	public ProjectObject(WebTarget rootTarget) {
+	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object) {
 //		this.rootTarget = rootTarget;
 		
 		nodeTarget = rootTarget.path("node");
+		
+		name = object.getName();
+		contextName = object.getContext().getName();
 	}
 	
 	protected Response sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
@@ -74,6 +81,7 @@ public abstract class ProjectObject {
 	
 	protected void createNode(Map<String, String> properties) {
 		this.properties = properties;
+		this.properties.put("name", name);
 		
 		JSONObject propertiesJSON = new JSONObject(this.properties);
 		
@@ -81,8 +89,10 @@ public abstract class ProjectObject {
 		
 		JSONObject responseJSON = new JSONObject(response.readEntity(String.class));
 		JSONObject metadataJSON = responseJSON.getJSONObject("metadata");
-		nodeID = metadataJSON.getInt("id");
-		labelsTarget = nodeTarget.path(Integer.toString(nodeID)).path("labels");
+		nodeID = Integer.toString(metadataJSON.getInt("id"));
+		labelsTarget = nodeTarget.path(nodeID).path("labels");
+		
+		addLabel(contextName);
 	}
 	
 	public List<String> getLabels() {
@@ -101,9 +111,10 @@ public abstract class ProjectObject {
 	}
 	
 	protected void addLabel(String label) {
-		getLabels().add(label);
+		List<String> labelsList = new ArrayList<String>();
+		labelsList.add(label);
 		
-		sendRequestToTargetWithJSON(labelsTarget, label, HttpRequestMethod.POST);
+		addLabels(labelsList);
 	}
 	
 	protected void addLabels(List<String> labels) {
@@ -113,4 +124,16 @@ public abstract class ProjectObject {
 		sendRequestToTargetWithJSON(labelsTarget, labelsJSON, HttpRequestMethod.POST);
 	}
 
+	public void createRelationship(ProjectObject toObject, String type, Map<String, String> properties) {
+		JSONObject requestJSON = new JSONObject();
+		requestJSON.put("to", nodeTarget.path(toObject.nodeID).getUri().toString());
+		requestJSON.put("type", type);
+		if (properties != null)
+			requestJSON.put("data", new JSONObject(properties));
+		
+		System.out.println("Relationship: " + requestJSON.toString());
+		
+		System.out.println("Response :" + sendRequestToTargetWithJSON(nodeTarget.path(nodeID).path("relationships"), requestJSON, HttpRequestMethod.POST).readEntity(String.class).toString());
+	}
+	
 }

@@ -18,9 +18,11 @@ import org.json.JSONObject;
 import org.pf.tools.cda.plugin.export.spi.AModelExporter;
 import org.pf.tools.cda.xpi.PluginConfiguration;
 import org.pfsw.odem.IExplorationContext;
+import org.pfsw.odem.INamespace;
 import org.pfsw.odem.IType;
 
 import pl.edu.mimuw.models.ProjectClass;
+import pl.edu.mimuw.models.ProjectNamespace;
 
 /**
  * @author Paweł Nowosad
@@ -36,6 +38,7 @@ public class Neo4jExporter extends AModelExporter {
 	private String commitTransactionUrl;
 	
 	private Map<String, ProjectClass> classMap;
+	private Map<String, ProjectNamespace> namespaceMap;
 	
 	/**
 	 * 
@@ -47,6 +50,7 @@ public class Neo4jExporter extends AModelExporter {
 		rootTarget = webClient.target(SERVER_ROOT_URI);
 		
 		classMap = new HashMap<String, ProjectClass>();
+		namespaceMap = new HashMap<String, ProjectNamespace>();
 	}
 
 	/* (non-Javadoc)
@@ -103,16 +107,34 @@ public class Neo4jExporter extends AModelExporter {
 	}
 
 	@Override
+	public boolean startNamespace(INamespace namespace) {
+		ProjectNamespace newNamespace = new ProjectNamespace(rootTarget, namespace);
+		String namespaceString = namespace != null ? namespace.getName() : "";
+		namespaceMap.put(namespaceString != null ? namespaceString : "", newNamespace);
+		
+		return super.startNamespace(namespace);
+	}
+	
+	@Override
+	public boolean finishNamespace(INamespace namespace) {
+		
+		return super.finishNamespace(namespace);
+	}
+	
+	@Override
 	public boolean startType(IType type) {
 		ProjectClass newClass = new ProjectClass(rootTarget, type);
 		classMap.put(type.getName(), newClass);
+		
+		String classNamespaceString = type.getNamespace().getName();
+		ProjectNamespace classNamespace = namespaceMap.get(classNamespaceString != null ? classNamespaceString : "");
+		newClass.createRelationship(classNamespace, "belongs to", null);
 		
 		return super.startType(type);
 	}
 	
 	@Override
 	public boolean finishType(IType type) {
-		
 		
 		return super.finishType(type);
 	}
