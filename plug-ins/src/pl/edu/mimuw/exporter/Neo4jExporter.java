@@ -4,7 +4,10 @@
 package pl.edu.mimuw.exporter;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -17,6 +20,10 @@ import org.glassfish.jersey.client.ClientResponse;
 import org.json.JSONObject;
 import org.pf.tools.cda.plugin.export.spi.AModelExporter;
 import org.pf.tools.cda.xpi.PluginConfiguration;
+import org.pfsw.odem.DependencyClassification;
+import org.pfsw.odem.DependencySet;
+import org.pfsw.odem.IDependency;
+import org.pfsw.odem.IDependencyFilter;
 import org.pfsw.odem.IExplorationContext;
 import org.pfsw.odem.INamespace;
 import org.pfsw.odem.IType;
@@ -128,6 +135,7 @@ public class Neo4jExporter extends AModelExporter {
 	@Override
 	public boolean startNamespace(INamespace namespace) {
 		ProjectNamespace newNamespace = new ProjectNamespace(rootTarget, namespace);
+		
 		String namespaceString = namespace != null ? namespace.getName() : "";
 		namespaceMap.put(namespaceString != null ? namespaceString : "", newNamespace);
 		
@@ -142,12 +150,51 @@ public class Neo4jExporter extends AModelExporter {
 	
 	@Override
 	public boolean startType(IType type) {
-		ProjectClass newClass = new ProjectClass(rootTarget, type);
-		classMap.put(type.getName(), newClass);
+		ProjectClass newClass = classMap.get(type.getName());
+		if (newClass == null) {
+			newClass = new ProjectClass(rootTarget, type);
+			classMap.put(type.getName(), newClass);
+		}
 		
 		String classNamespaceString = type.getNamespace().getName();
 		ProjectNamespace classNamespace = namespaceMap.get(classNamespaceString != null ? classNamespaceString : "");
 		newClass.createRelationship(classNamespace, "belongs to", null);
+		
+		DependencySet<IType,IType> dependencySet = type.getDependencies();
+		List<IDependency<IType, IType>> dependencyList = dependencySet.collect(new IDependencyFilter<IDependency<IType,IType>>() {
+			
+			@Override
+			public boolean matches(IDependency<IType, IType> arg0) {
+				return true;
+			}
+		});
+		
+		Set<String> matchedDependencies = new HashSet<String>();
+		for (IDependency<IType, IType> dependency : dependencyList) {
+			String targetName = dependency.getTargetElement().getName();
+			String dependencyName = dependency.getDependencyClassification().toString();
+			Map<String, String> relProperties = new HashMap<String, String>();
+			
+			String classificationKey = "classification";
+			if (dependency.getDependencyClassification() == DependencyClassification.EXTENSION)
+				relProperties.put(classificationKey, "extends");
+			else if (dependency.getDependencyClassification() == DependencyClassification.IMPLEMENTATION)
+				relProperties.put(classificationKey, "implements");
+			else
+				relProperties.put(classificationKey, "uses");
+			
+			if (!matchedDependencies.contains(targetName + dependencyName)) {
+				matchedDependencies.add(targetName + dependencyName);
+				
+				ProjectClass targetClass = classMap.get(targetName);
+				if (targetClass == null) {
+					targetClass = new ProjectClass(rootTarget, dependency.getTargetElement());
+					classMap.put(targetName, targetClass);
+				}
+				
+				newClass.createRelationship(targetClass, dependencyName, relProperties);
+			}
+		}
 		
 		return super.startType(type);
 	}
