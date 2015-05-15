@@ -22,6 +22,7 @@ import org.pf.tools.cda.plugin.export.spi.AModelExporter;
 import org.pf.tools.cda.xpi.PluginConfiguration;
 import org.pfsw.odem.DependencyClassification;
 import org.pfsw.odem.DependencySet;
+import org.pfsw.odem.IContainer;
 import org.pfsw.odem.IDependency;
 import org.pfsw.odem.IDependencyFilter;
 import org.pfsw.odem.IExplorationContext;
@@ -29,6 +30,7 @@ import org.pfsw.odem.INamespace;
 import org.pfsw.odem.IType;
 
 import pl.edu.mimuw.models.ProjectClass;
+import pl.edu.mimuw.models.ProjectContainer;
 import pl.edu.mimuw.models.ProjectNamespace;
 
 /**
@@ -44,6 +46,7 @@ public class Neo4jExporter extends AModelExporter {
 	
 	private String commitTransactionUrl;
 	
+	private ProjectContainer currentContainer;
 	private Map<String, ProjectClass> classMap;
 	private Map<String, ProjectNamespace> namespaceMap;
 	
@@ -131,6 +134,19 @@ public class Neo4jExporter extends AModelExporter {
 		
 		return super.finishContext(context);
 	}
+	
+	@Override
+	public boolean startContainer(IContainer container) {
+		this.currentContainer = new ProjectContainer(rootTarget, container);
+		
+		return super.startContainer(container);
+	}
+	
+	@Override
+	public boolean finishContainer(IContainer container) {
+		
+		return super.finishContainer(container);
+	}
 
 	@Override
 	public boolean startNamespace(INamespace namespace) {
@@ -138,6 +154,10 @@ public class Neo4jExporter extends AModelExporter {
 		
 		String namespaceString = namespace != null ? namespace.getName() : "";
 		namespaceMap.put(namespaceString != null ? namespaceString : "", newNamespace);
+		
+		if (currentContainer != null) {
+			newNamespace.createRelationship(currentContainer, "part of", null);
+		}
 		
 		return super.startNamespace(namespace);
 	}

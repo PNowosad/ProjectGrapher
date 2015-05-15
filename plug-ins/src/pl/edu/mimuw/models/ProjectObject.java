@@ -29,7 +29,6 @@ public abstract class ProjectObject {
 		DELETE
 	}
 	
-//	private WebTarget rootTarget;
 	private WebTarget nodeTarget;
 	private WebTarget labelsTarget;
 	
@@ -43,9 +42,7 @@ public abstract class ProjectObject {
 	/**
 	 * 
 	 */
-	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object) {
-//		this.rootTarget = rootTarget;
-		
+	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object) {;
 		nodeTarget = rootTarget.path("node");
 		
 		name = object.getName();
