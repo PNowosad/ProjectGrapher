@@ -131,9 +131,7 @@ public abstract class ProjectObject {
 		if (properties != null)
 			requestJSON.put("data", new JSONObject(properties));
 		
-		System.out.println("Relationship: " + requestJSON.toString());
-		
-		System.out.println("Response :" + sendRequestToTargetWithJSON(nodeTarget.path(nodeID).path("relationships"), requestJSON, HttpRequestMethod.POST).readEntity(String.class).toString());
+		sendRequestToTargetWithJSON(nodeTarget.path(nodeID).path("relationships"), requestJSON, HttpRequestMethod.POST);
 	}
 	
 }

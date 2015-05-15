@@ -102,6 +102,25 @@ public class Neo4jExporter extends AModelExporter {
 	
 	@Override
 	public boolean finishContext(IExplorationContext context) {
+		for (String namespaceString : namespaceMap.keySet()) {
+			ProjectNamespace namespace = namespaceMap.get(namespaceString);
+			
+			String nsString = new String(namespaceString);
+			while (nsString.length() > 0) {
+				int dotIndex = nsString.lastIndexOf(".");
+				if (dotIndex != -1)
+					nsString = nsString.substring(0, dotIndex);
+				else
+					nsString = "";
+				
+				ProjectNamespace superNamespace = namespaceMap.get(nsString);
+				if (superNamespace != null) {
+					namespace.createRelationship(superNamespace, "subnamespace", null);
+					
+					break;
+				}
+			}
+		}
 		
 		return super.finishContext(context);
 	}
