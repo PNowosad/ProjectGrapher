@@ -4,12 +4,14 @@
 package pl.edu.mimuw;
 
 import java.util.Locale;
+import java.util.Properties;
 
 import org.pf.tools.cda.plugin.export.spi.AModelExporter;
 import org.pf.tools.cda.ui.plugin.export.spi.AModelExporterUIPlugin;
 import org.pf.tools.cda.xpi.IPluginInfo;
 import org.pf.tools.cda.xpi.PluginConfiguration;
 import org.pfsw.odem.IExplorationModelObject;
+import org.pf.plugin.IInitializablePlugin;
 
 import pl.edu.mimuw.exporter.Neo4jExporter;
 
@@ -17,8 +19,10 @@ import pl.edu.mimuw.exporter.Neo4jExporter;
  * @author Paweł Nowosad
  *
  */
-public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPluginInfo {
+public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPluginInfo, IInitializablePlugin {
 
+	private String databaseUrl = "http://localhost:7474/";
+	
 	/**
 	 * 
 	 */
@@ -55,7 +59,15 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 	 */
 	@Override
 	public AModelExporter createExporter(PluginConfiguration arg0) {
-		return new Neo4jExporter();
+		return new Neo4jExporter(this.databaseUrl);
+	}
+
+	@Override
+	public void initPlugin(String arg0, Properties arg1) {
+		String newDatabaseUrl = arg1.getProperty("databaseUrl");
+		if (newDatabaseUrl != null) {
+			this.databaseUrl = newDatabaseUrl;
+		}
 	}
 
 }

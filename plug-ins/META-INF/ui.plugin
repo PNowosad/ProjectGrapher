@@ -1,1 +1,1 @@
-exportNeoFJ=pl.edu.mimuw.Neo4jExporterUIPlugin
+exportNeo4J=pl.edu.mimuw.Neo4jExporterUIPlugin;databaseUrl=http://localhost:7474/

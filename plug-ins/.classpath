@@ -13,5 +13,10 @@
 	<classpathentry exported="true" kind="lib" path="libs/jersey-container-servlet.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jersey-server.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/json-20140107.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf-application.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf-bcel.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf-cda-base.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/pf-cda-core.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

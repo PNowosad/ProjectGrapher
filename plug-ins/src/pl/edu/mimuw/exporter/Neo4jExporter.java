@@ -39,7 +39,7 @@ import pl.edu.mimuw.models.ProjectNamespace;
  */
 public class Neo4jExporter extends AModelExporter {
 
-	static final String SERVER_ROOT_URI = "http://localhost:7474/db/data/";
+	static String SERVER_ROOT_URI;
 
 	private Client webClient;
 	private WebTarget rootTarget;
@@ -53,8 +53,10 @@ public class Neo4jExporter extends AModelExporter {
 	/**
 	 * 
 	 */
-	public Neo4jExporter() {
+	public Neo4jExporter(String databaseUrl) {
 		System.out.println("Neo4jExporter created!");
+		
+		SERVER_ROOT_URI = databaseUrl + "db/data/";
 		
 		webClient = ClientBuilder.newClient();
 		rootTarget = webClient.target(SERVER_ROOT_URI);
