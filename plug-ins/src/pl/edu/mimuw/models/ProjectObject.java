@@ -22,6 +22,11 @@ import org.pfsw.odem.IExplorationModelObject;
  *
  */
 public abstract class ProjectObject {
+	
+	final static String ExtDataLabels = "labels";
+	final static String ExtDataProperties = "properties";
+	final static String ExtDataRelations = "relations";
+	
 	private enum HttpRequestMethod {
 		GET,
 		POST,
@@ -38,18 +43,21 @@ public abstract class ProjectObject {
 	
 	protected Map<String, String> properties;
 	protected List<String> labels;
+	protected List<JSONObject> externalData;
 	
 	/**
 	 * 
 	 */
-	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object) {;
+	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object, List<JSONObject> externalData) {;
 		nodeTarget = rootTarget.path("node");
 		
 		name = object.getName();
 		contextName = object.getContext().getName();
+		
+		this.externalData = externalData;
 	}
 	
-	protected Response sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
+	protected String sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
 		Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE);
 		
 		Entity<String> requestEntity = Entity.entity(json.toString(), MediaType.APPLICATION_JSON_TYPE);
@@ -73,23 +81,42 @@ public abstract class ProjectObject {
 			break;
 		}
 		
-		return response;
+		return response.readEntity(String.class);
 	}
 	
 	protected void createNode(Map<String, String> properties) {
 		this.properties = properties;
 		this.properties.put("name", name);
 		
+		List<String> initLabels = new ArrayList<String>();
+		
+		for (JSONObject objectJsonInfo : externalData) {
+			if (objectJsonInfo.has(ExtDataProperties)) {
+				JSONObject jsonProperties = objectJsonInfo.getJSONObject(ExtDataProperties);
+				for (String key : JSONObject.getNames(jsonProperties)) {
+					this.properties.put(key, jsonProperties.get(key).toString());
+				}
+			}
+			
+			if (objectJsonInfo.has(ExtDataLabels)) {
+				JSONArray jsonLabels = objectJsonInfo.getJSONArray(ExtDataLabels);
+				for (int i = 0; i < jsonLabels.length(); i++) {
+					initLabels.add(jsonLabels.get(i).toString());
+				}
+			}
+		}
+		
 		JSONObject propertiesJSON = new JSONObject(this.properties);
 		
-		Response response = sendRequestToTargetWithJSON(nodeTarget, propertiesJSON, HttpRequestMethod.POST);
+		String response = sendRequestToTargetWithJSON(nodeTarget, propertiesJSON, HttpRequestMethod.POST);
 		
-		JSONObject responseJSON = new JSONObject(response.readEntity(String.class));
+		JSONObject responseJSON = new JSONObject(response);
 		JSONObject metadataJSON = responseJSON.getJSONObject("metadata");
 		nodeID = Integer.toString(metadataJSON.getInt("id"));
 		labelsTarget = nodeTarget.path(nodeID).path("labels");
 		
-		addLabel(contextName);
+		initLabels.add(contextName);
+		addLabels(initLabels);
 	}
 	
 	public List<String> getLabels() {

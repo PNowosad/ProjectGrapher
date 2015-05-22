@@ -3,6 +3,7 @@
  */
 package pl.edu.mimuw.exporter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.pfsw.odem.IContainer;
 import org.pfsw.odem.IDependency;
 import org.pfsw.odem.IDependencyFilter;
 import org.pfsw.odem.IExplorationContext;
+import org.pfsw.odem.IExplorationModelObject;
 import org.pfsw.odem.INamespace;
 import org.pfsw.odem.IType;
 
@@ -46,6 +48,8 @@ public class Neo4jExporter extends AModelExporter {
 	
 	private String commitTransactionUrl;
 	
+	private List<JSONObject> externalJsons;
+	
 	private ProjectContainer currentContainer;
 	private Map<String, ProjectClass> classMap;
 	private Map<String, ProjectNamespace> namespaceMap;
@@ -53,7 +57,7 @@ public class Neo4jExporter extends AModelExporter {
 	/**
 	 * 
 	 */
-	public Neo4jExporter(String databaseUrl) {
+	public Neo4jExporter(String databaseUrl, List<JSONObject> externalData) {
 		System.out.println("Neo4jExporter created!");
 		
 		SERVER_ROOT_URI = databaseUrl + "db/data/";
@@ -63,6 +67,8 @@ public class Neo4jExporter extends AModelExporter {
 		
 		classMap = new HashMap<String, ProjectClass>();
 		namespaceMap = new HashMap<String, ProjectNamespace>();
+		
+		externalJsons = externalData;
 	}
 
 	/* (non-Javadoc)
@@ -88,6 +94,20 @@ public class Neo4jExporter extends AModelExporter {
 	public boolean initialize(PluginConfiguration arg0) {
 
 		return true;
+	}
+	
+	private List<JSONObject> findAllJsonsForIExplorationModelObject(IExplorationModelObject object) {
+		String objectName = object.getName();
+		
+		List<JSONObject> foundJsons = new ArrayList<JSONObject>();
+		for (JSONObject jsonObject : externalJsons) {
+			if (jsonObject.has(objectName)) {
+				JSONObject externalJsonForName = jsonObject.getJSONObject(objectName);
+				foundJsons.add(externalJsonForName);
+			}
+		}
+		
+		return foundJsons;
 	}
 	
 	public void beginNewTransaction() {
@@ -139,7 +159,7 @@ public class Neo4jExporter extends AModelExporter {
 	
 	@Override
 	public boolean startContainer(IContainer container) {
-		this.currentContainer = new ProjectContainer(rootTarget, container);
+		this.currentContainer = new ProjectContainer(rootTarget, container, findAllJsonsForIExplorationModelObject(container));
 		
 		return super.startContainer(container);
 	}
@@ -152,7 +172,7 @@ public class Neo4jExporter extends AModelExporter {
 
 	@Override
 	public boolean startNamespace(INamespace namespace) {
-		ProjectNamespace newNamespace = new ProjectNamespace(rootTarget, namespace);
+		ProjectNamespace newNamespace = new ProjectNamespace(rootTarget, namespace, findAllJsonsForIExplorationModelObject(namespace));
 		
 		String namespaceString = namespace != null ? namespace.getName() : "";
 		namespaceMap.put(namespaceString != null ? namespaceString : "", newNamespace);
@@ -174,7 +194,7 @@ public class Neo4jExporter extends AModelExporter {
 	public boolean startType(IType type) {
 		ProjectClass newClass = classMap.get(type.getName());
 		if (newClass == null) {
-			newClass = new ProjectClass(rootTarget, type);
+			newClass = new ProjectClass(rootTarget, type, findAllJsonsForIExplorationModelObject(type));
 			classMap.put(type.getName(), newClass);
 		}
 		
@@ -210,7 +230,7 @@ public class Neo4jExporter extends AModelExporter {
 				
 				ProjectClass targetClass = classMap.get(targetName);
 				if (targetClass == null) {
-					targetClass = new ProjectClass(rootTarget, dependency.getTargetElement());
+					targetClass = new ProjectClass(rootTarget, dependency.getTargetElement(), findAllJsonsForIExplorationModelObject(dependency.getTargetElement()));
 					classMap.put(targetName, targetClass);
 				}
 				
