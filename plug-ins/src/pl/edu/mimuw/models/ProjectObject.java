@@ -57,7 +57,7 @@ public abstract class ProjectObject {
 		this.externalData = externalData;
 	}
 	
-	protected Response sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
+	protected String sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
 		Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE);
 		
 		Entity<String> requestEntity = Entity.entity(json.toString(), MediaType.APPLICATION_JSON_TYPE);
@@ -81,7 +81,7 @@ public abstract class ProjectObject {
 			break;
 		}
 		
-		return response;
+		return response.readEntity(String.class);
 	}
 	
 	protected void createNode(Map<String, String> properties) {
@@ -91,15 +91,15 @@ public abstract class ProjectObject {
 		List<String> initLabels = new ArrayList<String>();
 		
 		for (JSONObject objectJsonInfo : externalData) {
-			JSONObject jsonProperties = objectJsonInfo.getJSONObject(ExtDataProperties);
-			if (jsonProperties != null) {
+			if (objectJsonInfo.has(ExtDataProperties)) {
+				JSONObject jsonProperties = objectJsonInfo.getJSONObject(ExtDataProperties);
 				for (String key : JSONObject.getNames(jsonProperties)) {
 					this.properties.put(key, jsonProperties.get(key).toString());
 				}
 			}
 			
-			JSONArray jsonLabels = objectJsonInfo.getJSONArray(ExtDataLabels);
-			if (jsonLabels != null) {
+			if (objectJsonInfo.has(ExtDataLabels)) {
+				JSONArray jsonLabels = objectJsonInfo.getJSONArray(ExtDataLabels);
 				for (int i = 0; i < jsonLabels.length(); i++) {
 					initLabels.add(jsonLabels.get(i).toString());
 				}
@@ -108,9 +108,9 @@ public abstract class ProjectObject {
 		
 		JSONObject propertiesJSON = new JSONObject(this.properties);
 		
-		Response response = sendRequestToTargetWithJSON(nodeTarget, propertiesJSON, HttpRequestMethod.POST);
+		String response = sendRequestToTargetWithJSON(nodeTarget, propertiesJSON, HttpRequestMethod.POST);
 		
-		JSONObject responseJSON = new JSONObject(response.readEntity(String.class));
+		JSONObject responseJSON = new JSONObject(response);
 		JSONObject metadataJSON = responseJSON.getJSONObject("metadata");
 		nodeID = Integer.toString(metadataJSON.getInt("id"));
 		labelsTarget = nodeTarget.path(nodeID).path("labels");

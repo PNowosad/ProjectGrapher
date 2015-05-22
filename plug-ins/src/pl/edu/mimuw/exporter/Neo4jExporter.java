@@ -101,8 +101,8 @@ public class Neo4jExporter extends AModelExporter {
 		
 		List<JSONObject> foundJsons = new ArrayList<JSONObject>();
 		for (JSONObject jsonObject : externalJsons) {
-			JSONObject externalJsonForName = jsonObject.getJSONObject(objectName);
-			if (externalJsonForName != null) {
+			if (jsonObject.has(objectName)) {
+				JSONObject externalJsonForName = jsonObject.getJSONObject(objectName);
 				foundJsons.add(externalJsonForName);
 			}
 		}
