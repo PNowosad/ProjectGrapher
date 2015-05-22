@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.ws.rs.client.WebTarget;
 
+import org.json.JSONObject;
 import org.pfsw.odem.IType;
 
 /**
@@ -21,8 +22,8 @@ public class ProjectClass extends ProjectObject {
 	/**
 	 * 
 	 */
-	public ProjectClass(WebTarget rootTarget, IType classType) {
-		super(rootTarget, classType);
+	public ProjectClass(WebTarget rootTarget, IType classType, List<JSONObject> externalData) {
+		super(rootTarget, classType, externalData);
 		
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put("class_name", classType.getUnqualifiedName());

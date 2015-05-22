@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.ws.rs.client.WebTarget;
 
+import org.json.JSONObject;
 import org.pfsw.odem.IContainer;
 
 /**
@@ -21,8 +22,8 @@ public class ProjectContainer extends ProjectObject {
 	/**
 	 * 
 	 */
-	public ProjectContainer(WebTarget rootTarget, IContainer container) {
-		super(rootTarget, container);
+	public ProjectContainer(WebTarget rootTarget, IContainer container, List<JSONObject> externalData) {
+		super(rootTarget, container, externalData);
 		
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put("classification", container.getClassification().toString());

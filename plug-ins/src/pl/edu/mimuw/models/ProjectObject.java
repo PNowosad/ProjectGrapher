@@ -22,6 +22,11 @@ import org.pfsw.odem.IExplorationModelObject;
  *
  */
 public abstract class ProjectObject {
+	
+	final static String ExtDataLabels = "labels";
+	final static String ExtDataProperties = "properties";
+	final static String ExtDataRelations = "relations";
+	
 	private enum HttpRequestMethod {
 		GET,
 		POST,
@@ -38,15 +43,18 @@ public abstract class ProjectObject {
 	
 	protected Map<String, String> properties;
 	protected List<String> labels;
+	protected List<JSONObject> externalData;
 	
 	/**
 	 * 
 	 */
-	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object) {;
+	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object, List<JSONObject> externalData) {;
 		nodeTarget = rootTarget.path("node");
 		
 		name = object.getName();
 		contextName = object.getContext().getName();
+		
+		this.externalData = externalData;
 	}
 	
 	protected Response sendRequestToTargetWithJSON(WebTarget target, Object json, HttpRequestMethod method) {
@@ -80,6 +88,24 @@ public abstract class ProjectObject {
 		this.properties = properties;
 		this.properties.put("name", name);
 		
+		List<String> initLabels = new ArrayList<String>();
+		
+		for (JSONObject objectJsonInfo : externalData) {
+			JSONObject jsonProperties = objectJsonInfo.getJSONObject(ExtDataProperties);
+			if (jsonProperties != null) {
+				for (String key : JSONObject.getNames(jsonProperties)) {
+					this.properties.put(key, jsonProperties.get(key).toString());
+				}
+			}
+			
+			JSONArray jsonLabels = objectJsonInfo.getJSONArray(ExtDataLabels);
+			if (jsonLabels != null) {
+				for (int i = 0; i < jsonLabels.length(); i++) {
+					initLabels.add(jsonLabels.get(i).toString());
+				}
+			}
+		}
+		
 		JSONObject propertiesJSON = new JSONObject(this.properties);
 		
 		Response response = sendRequestToTargetWithJSON(nodeTarget, propertiesJSON, HttpRequestMethod.POST);
@@ -89,7 +115,8 @@ public abstract class ProjectObject {
 		nodeID = Integer.toString(metadataJSON.getInt("id"));
 		labelsTarget = nodeTarget.path(nodeID).path("labels");
 		
-		addLabel(contextName);
+		initLabels.add(contextName);
+		addLabels(initLabels);
 	}
 	
 	public List<String> getLabels() {
