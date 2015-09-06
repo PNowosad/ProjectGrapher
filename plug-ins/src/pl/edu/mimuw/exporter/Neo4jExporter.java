@@ -38,7 +38,7 @@ import pl.edu.mimuw.models.ProjectNamespace;
 /**
  * Główna klasa przetwarzająca wszystkie elementy struktury projektu. Realizuje wzorzec projektowy "Visitor".
  * Odpowiada za stworzenie odpowiednich modeli dla każdego elementu oraz połączenie ich w odpowiednie relacje.
- * Nawiązuje połączenie z grafową bazą danych.
+ * Komunikuje się z grafową bazą danych w celu zapisania grafu.
  * 
  * @author Paweł Nowosad
  *

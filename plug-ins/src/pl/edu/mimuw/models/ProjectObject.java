@@ -18,9 +18,10 @@ import org.json.JSONObject;
 import org.pfsw.odem.IExplorationModelObject;
 
 /**
- * Model reprezentujący dowolny element w strukturze projektu, a jednocześnie wierzchołek w grafowej bazie danych.
- * Implementuje podstawową logikę obsługi bazy danych, wspólną dla wszystkich wierzchołków. Jednocześnie dostępniając spójny
- * interfejs do obsługi wierzchołków. 
+ * Abstrakcyjny model reprezentujący dowolny element w strukturze projektu oraz jego wierzchołek w grafowej bazie danych.
+ * Implementuje podstawową logikę obsługi bazy danych, wspólną dla wszystkich wierzchołków. Jednocześnie udostępniając
+ * spójny interfejs do obsługi wierzchołków. Inicjalizuje podstawowe dane na podstawie przekazanego elementu struktury
+ * projektu.
  * 
  * @author Paweł Nowosad
  *

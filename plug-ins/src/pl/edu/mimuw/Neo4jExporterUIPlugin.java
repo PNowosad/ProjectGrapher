@@ -44,8 +44,7 @@ import pl.edu.mimuw.exporter.Neo4jExporter;
  * <li> zainicjalizowanie wtyczki,
  * <li> zarejestrowanie i dostarczenie informacji o wtyczce w narzędziu CDA,
  * <li> stworzenie panelu do importu dodatkowych danych,
- * <li> stworzenie eksportera przeprowadzającego transformację projektu na graf,
- * <li> nawiązanie połączenia z bazą danych Neo4J do zapisania grafu.
+ * <li> stworzenie eksportera przeprowadzającego transformację projektu na graf.
  * </ul>
  * 
  * @author Paweł Nowosad
