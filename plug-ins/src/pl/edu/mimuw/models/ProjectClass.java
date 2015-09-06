@@ -14,13 +14,17 @@ import org.json.JSONObject;
 import org.pfsw.odem.IType;
 
 /**
+ * Model reprezentujący pojedynczy typ w projekcie.
+ * 
+ * {@inheritDoc}
+ * 
  * @author Paweł Nowosad
  *
  */
 public class ProjectClass extends ProjectObject {
 
 	/**
-	 * 
+	 * {@inheritDoc}
 	 */
 	public ProjectClass(WebTarget rootTarget, IType classType, List<JSONObject> externalData) {
 		super(rootTarget, classType, externalData);

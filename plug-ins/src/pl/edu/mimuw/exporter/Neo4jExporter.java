@@ -36,6 +36,10 @@ import pl.edu.mimuw.models.ProjectContainer;
 import pl.edu.mimuw.models.ProjectNamespace;
 
 /**
+ * Główna klasa przetwarzająca wszystkie elementy struktury projektu. Realizuje wzorzec projektowy "Visitor".
+ * Odpowiada za stworzenie odpowiednich modeli dla każdego elementu oraz połączenie ich w odpowiednie relacje.
+ * Nawiązuje połączenie z grafową bazą danych.
+ * 
  * @author Paweł Nowosad
  *
  */
@@ -55,7 +59,10 @@ public class Neo4jExporter extends AModelExporter {
 	private Map<String, ProjectNamespace> namespaceMap;
 	
 	/**
+	 * Główny konstruktor odpowiedzialny za zainicjalizowanie eksportera oraz stworzenie klienta do komunikacji z bazą danych.
 	 * 
+	 * @param databaseUrl	adres do serwera bazy danych, gdzie zostanie zapisany graf
+	 * @param externalData	wczytane do pamięci z plików JSONy z dodatkowymi danymi do zapisania w grafie
 	 */
 	public Neo4jExporter(String databaseUrl, List<JSONObject> externalData) {
 		System.out.println("Neo4jExporter created!");
@@ -71,7 +78,9 @@ public class Neo4jExporter extends AModelExporter {
 		externalJsons = externalData;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * @return Nazwę dostawcy wtyczki, np. osoba, organizacja.
+	 * 
 	 * @see org.pf.tools.cda.xpi.IPluginInfo#getPluginProvider()
 	 */
 	@Override
@@ -79,7 +88,9 @@ public class Neo4jExporter extends AModelExporter {
 		return "Paweł Nowosad";
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * @return Wersję wtyczki, np. "1.0"
+	 * 
 	 * @see org.pf.tools.cda.xpi.IPluginInfo#getPluginVersion()
 	 */
 	@Override
@@ -87,7 +98,11 @@ public class Neo4jExporter extends AModelExporter {
 		return "0.1";
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Odpowiada za zainicjalizowanie eksportera.
+	 * 
+	 * @return <code>true</code> jeśli kontynuować przetwarzanie, <code>false</code> jeśli zatrzymać
+	 * 
 	 * @see org.pf.tools.cda.plugin.export.spi.AModelExporter#initialize(org.pf.tools.cda.xpi.PluginConfiguration)
 	 */
 	@Override
@@ -96,6 +111,13 @@ public class Neo4jExporter extends AModelExporter {
 		return true;
 	}
 	
+	/**
+	 * Znajduje wszystkie dodatkowe dane jakie powinny być przypisane do przekazanego w parametrze obiektu.
+	 * 
+	 * @param object	element struktury projektu, dla którego będą znalezione wszystkie dodatkowe informacje
+	 * 
+	 * @return			lista wszystkich znalezionych informacji o tym obiekcie
+	 */
 	private List<JSONObject> findAllJsonsForIExplorationModelObject(IExplorationModelObject object) {
 		String objectName = object.getName();
 		
@@ -110,6 +132,9 @@ public class Neo4jExporter extends AModelExporter {
 		return foundJsons;
 	}
 	
+	/**
+	 * Rozpoczyna nową transakcję w grafowej bazie danych.
+	 */
 	public void beginNewTransaction() {
 		WebTarget newTransactionTarget = rootTarget.path("transaction");
 		
@@ -119,6 +144,9 @@ public class Neo4jExporter extends AModelExporter {
 		commitTransactionUrl = responseJSON.getString("commit");
 	}
 	
+	/**
+	 * Zamyka i zatwierdza transakcję w grafowej bazie danych.
+	 */
 	public void commitTransaction() {
 		WebTarget commitTransactionTarget = webClient.target(commitTransactionUrl);
 		commitTransactionTarget.request().post(Entity.entity("{'statements':[]}", MediaType.APPLICATION_JSON_TYPE));
@@ -126,12 +154,26 @@ public class Neo4jExporter extends AModelExporter {
 		commitTransactionUrl = "";
 	}
 	
+	/**
+	 * Rozpoczyna przetwarzanie drzewa dla danego kontekstu.
+	 * 
+	 * @param context	aktualny kontekst
+	 * 
+	 * @return			zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean startContext(IExplorationContext context) {
 		
 		return super.startContext(context);
 	}
 	
+	/**
+	 * Kończy przetwarzanie drzewa dla danego kontekstu.
+	 * 
+	 * @param context	aktualny kontekst
+	 * 
+	 * @return			zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean finishContext(IExplorationContext context) {
 		for (String namespaceString : namespaceMap.keySet()) {
@@ -157,6 +199,13 @@ public class Neo4jExporter extends AModelExporter {
 		return super.finishContext(context);
 	}
 	
+	/**
+	 * Rozpoczyna przetwarzanie drzewa dla danego kontenera. Tworzy model dla nowego kontenera.
+	 * 
+	 * @param container	aktualny kontener
+	 * 
+	 * @return			zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean startContainer(IContainer container) {
 		this.currentContainer = new ProjectContainer(rootTarget, container, findAllJsonsForIExplorationModelObject(container));
@@ -164,12 +213,26 @@ public class Neo4jExporter extends AModelExporter {
 		return super.startContainer(container);
 	}
 	
+	/**
+	 * Kończy przetwarzanie drzewa dla danego kontenera.
+	 * 
+	 * @param container	aktualny kontener
+	 * 
+	 * @return			zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean finishContainer(IContainer container) {
 		
 		return super.finishContainer(container);
 	}
 
+	/**
+	 * Rozpoczyna przetwarzanie drzewa dla danej przestrzeni nazw. Tworzy model dla nowej przestrzeni nazw.
+	 * 
+	 * @param namespace	aktualna przestrzeń nazw
+	 * 
+	 * @return			zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean startNamespace(INamespace namespace) {
 		ProjectNamespace newNamespace = new ProjectNamespace(rootTarget, namespace, findAllJsonsForIExplorationModelObject(namespace));
@@ -184,12 +247,27 @@ public class Neo4jExporter extends AModelExporter {
 		return super.startNamespace(namespace);
 	}
 	
+	/**
+	 * Kończy przetwarzanie drzewa dla danej przestrzeni nazw.
+	 * 
+	 * @param namespace	aktualna przestrzeń nazw
+	 * 
+	 * @return			zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean finishNamespace(INamespace namespace) {
 		
 		return super.finishNamespace(namespace);
 	}
 	
+	/**
+	 * Rozpoczyna przetwarzanie drzewa dla danego typu. Tworzy model dla nowego typu.
+	 * Tworzy odpowiednie relacje pomiędzy typami i przestrzeniami nazw.
+	 * 
+	 * @param type	aktualny typ
+	 * 
+	 * @return		zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean startType(IType type) {
 		ProjectClass newClass = classMap.get(type.getName());
@@ -241,6 +319,13 @@ public class Neo4jExporter extends AModelExporter {
 		return super.startType(type);
 	}
 	
+	/**
+	 * Kończy przetwarzanie drzewa dla danego typu.
+	 * 
+	 * @param type	aktualny typ
+	 * 
+	 * @return		zwraca czy kontynuować przetwarzanie
+	 */
 	@Override
 	public boolean finishType(IType type) {
 		

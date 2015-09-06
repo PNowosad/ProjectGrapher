@@ -39,8 +39,16 @@ import org.pfsw.odem.IExplorationModelObject;
 import pl.edu.mimuw.exporter.Neo4jExporter;
 
 /**
+ * Główna klasa odpowiadająca za działanie całej wtyczki. Odpowiada za:
+ * <ul>
+ * <li> zainicjalizowanie wtyczki,
+ * <li> zarejestrowanie i dostarczenie informacji o wtyczce w narzędziu CDA,
+ * <li> stworzenie panelu do importu dodatkowych danych,
+ * <li> stworzenie eksportera przeprowadzającego transformację projektu na graf,
+ * <li> nawiązanie połączenia z bazą danych Neo4J do zapisania grafu.
+ * </ul>
+ * 
  * @author Paweł Nowosad
- *
  */
 public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPluginInfo, IInitializablePlugin {
 
@@ -54,10 +62,16 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 	 * 
 	 */
 	public Neo4jExporterUIPlugin() {
-		// TODO Auto-generated constructor stub
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Metoda określa nazwę wtyczki widoczną w interfejsie CDA. Wyświetla się po rozwinięciu panelu do eksportu danych.
+	 * 
+	 * @param arg0	określa język infterfejsu
+	 * @param arg1	obiekt, na którym ma działać wtyczka
+	 * 
+	 * @return 		Nazwa akcji widoczna w interfejsie. <code>null</code> jeśli ma być niedostępna dla tego elementu
+	 * 
 	 * @see org.pf.tools.cda.ui.xpi.IPluginActionInfo#getActionText(java.util.Locale, org.pfsw.odem.IExplorationModelObject)
 	 */
 	@Override
@@ -65,7 +79,9 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 		return "Neo4j";
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * @return Nazwę dostawcy wtyczki, np. osoba, organizacja.
+	 * 
 	 * @see org.pf.tools.cda.xpi.IPluginInfo#getPluginProvider()
 	 */
 	@Override
@@ -73,7 +89,9 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 		return "Paweł Nowosad";
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * @return Wersję wtyczki, np. "1.0"
+	 * 
 	 * @see org.pf.tools.cda.xpi.IPluginInfo#getPluginVersion()
 	 */
 	@Override
@@ -81,6 +99,14 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 		return "1.0";
 	}
 	
+	/**
+	 * Tworzy i konfiguruje panel do podania lokalizacji plików z dodatkowymi danymi. Pozwala na dodawanie i usuwanie lokalizacji plików.
+	 * Odpowiada za zdefiniowanie obsługi zdarzeń w stworzonym panelu, takich jak wczytanie JSONów z dodatkowymi danymi po zatwierdzeniu wszystkich lokalizacji. 
+	 * 
+	 * @param parent	rodzic, do którego ma być podpięty stworzony panel
+	 * 
+	 * @return 			stworzony i zainicjalizowany panel, gotowy do wyświetlenia
+	 */
 	private JPanel createImportPanel(final Dialog parent) {
 		JPanel importPanel = new JPanel();
 		importPanel.setLayout(new BoxLayout(importPanel, BoxLayout.Y_AXIS));
@@ -157,6 +183,13 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 		return importPanel;
 	}
 	
+	/**
+	 * Tworzy domyślną konfigurację oraz dialog wyświetlający prośbę z interfejsem do podania lokalizacji plików z dodatkowymi danymi.
+	 * 
+	 * @param parent	Rodzic, w którym wywoływana jest wtyczka
+	 * 
+	 * @return Zwraca konfigurację lub <code>null</code>
+	 */
 	@Override
 	public PluginConfiguration getConfiguration(Frame parent) {
 		final PluginConfiguration pluginConfiguration = super.getConfiguration(parent);
@@ -217,7 +250,13 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 		return pluginConfiguration;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Tworzy eksporter do odwiedzenia wszystkich wybranych danych oraz przeprowadzenia ich transformacji.
+	 * 
+	 * @param arg0	konfiguracja dla nowego eksportera
+	 * 
+	 * @return		nowa, zainicjalizowana instancja eksportera
+	 * 
 	 * @see org.pf.tools.cda.ui.plugin.export.spi.AModelExporterUIPlugin#createExporter(org.pf.tools.cda.xpi.PluginConfiguration)
 	 */
 	@SuppressWarnings("unchecked")
@@ -230,6 +269,9 @@ public class Neo4jExporterUIPlugin extends AModelExporterUIPlugin implements IPl
 		return new Neo4jExporter(this.databaseUrl, importedJsons);
 	}
 
+	/**
+	 * Pobiera odpowiednie dane z dostarczonej konfiguracji. Inicjalizuje adres do serwera bazy danych.
+	 */
 	@Override
 	public void initPlugin(String arg0, Properties arg1) {
 		String newDatabaseUrl = arg1.getProperty("databaseUrl");

@@ -12,13 +12,17 @@ import org.json.JSONObject;
 import org.pfsw.odem.INamespace;
 
 /**
+ * Model reprezentujący pojedynczą przestrzeń nazw w projekcie.
+ * 
+ * {@inheritDoc}
+ * 
  * @author Paweł Nowosad
  *
  */
 public class ProjectNamespace extends ProjectObject {
 	
 	/**
-	 * @param rootTarget
+	 * {@inheritDoc} 
 	 */
 	public ProjectNamespace(WebTarget rootTarget, INamespace namespace, List<JSONObject> externalData) {
 		super(rootTarget, namespace, externalData);

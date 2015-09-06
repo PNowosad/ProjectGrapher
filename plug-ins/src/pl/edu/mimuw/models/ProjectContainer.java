@@ -14,13 +14,17 @@ import org.json.JSONObject;
 import org.pfsw.odem.IContainer;
 
 /**
+ * Model reprezentujący pojedynczy kontener w projekcie.
+ * 
+ * {@inheritDoc}
+ * 
  * @author Paweł Nowosad
  *
  */
 public class ProjectContainer extends ProjectObject {
 	
 	/**
-	 * 
+	 * {@inheritDoc}
 	 */
 	public ProjectContainer(WebTarget rootTarget, IContainer container, List<JSONObject> externalData) {
 		super(rootTarget, container, externalData);
