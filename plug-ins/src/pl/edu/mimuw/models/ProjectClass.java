@@ -14,9 +14,7 @@ import org.json.JSONObject;
 import org.pfsw.odem.IType;
 
 /**
- * Model reprezentujący pojedynczy typ w projekcie.
- * 
- * {@inheritDoc}
+ * Model reprezentujący pojedynczy typ w projekcie, a jednocześnie wierzchołek w grafowej bazie danych.
  * 
  * @author Paweł Nowosad
  *
@@ -24,7 +22,11 @@ import org.pfsw.odem.IType;
 public class ProjectClass extends ProjectObject {
 
 	/**
-	 * {@inheritDoc}
+	 * Odpowiada za zainicjalizowanie i przetworzenie danych o typie oraz zapisanie go w grafowej bazie danych.
+	 * 
+	 * @param rootTarget	główny adres do REST API grafowej bazy danych
+	 * @param classType		obiekt, którym zostanie zainicjalizowany model
+	 * @param externalData	dodatkowe dane, które zostaną przypisane do wierzchołka
 	 */
 	public ProjectClass(WebTarget rootTarget, IType classType, List<JSONObject> externalData) {
 		super(rootTarget, classType, externalData);
