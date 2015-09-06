@@ -57,6 +57,7 @@ public class Neo4jExporter extends AModelExporter {
 	private ProjectContainer currentContainer;
 	private Map<String, ProjectClass> classMap;
 	private Map<String, ProjectNamespace> namespaceMap;
+	private Map<String, ProjectContainer> containerMap;
 	
 	/**
 	 * Główny konstruktor odpowiedzialny za zainicjalizowanie eksportera oraz stworzenie klienta do komunikacji z bazą danych.
@@ -74,6 +75,7 @@ public class Neo4jExporter extends AModelExporter {
 		
 		classMap = new HashMap<String, ProjectClass>();
 		namespaceMap = new HashMap<String, ProjectNamespace>();
+		containerMap = new HashMap<String, ProjectContainer>();
 		
 		externalJsons = externalData;
 	}
@@ -208,7 +210,27 @@ public class Neo4jExporter extends AModelExporter {
 	 */
 	@Override
 	public boolean startContainer(IContainer container) {
-		this.currentContainer = new ProjectContainer(rootTarget, container, findAllJsonsForIExplorationModelObject(container));
+		String containerName = container.getName();
+		if (this.containerMap.containsKey(containerName))
+			this.currentContainer = this.containerMap.get(containerName);
+		else {
+			this.currentContainer = new ProjectContainer(rootTarget, container, findAllJsonsForIExplorationModelObject(container));
+			containerMap.put(this.currentContainer.name, this.currentContainer);
+		}
+		
+		IContainer parentContainer = container.getParentContainer();
+		if (parentContainer != null) {
+			String parentContainerName = parentContainer.getName();
+			ProjectContainer parentContainerNode = null;
+			if (containerMap.containsKey(parentContainerName))
+				parentContainerNode = containerMap.get(parentContainerName);
+			else {
+				parentContainerNode = new ProjectContainer(rootTarget, parentContainer, findAllJsonsForIExplorationModelObject(parentContainer));
+				containerMap.put(parentContainerName, parentContainerNode);
+			}
+			
+			this.currentContainer.createRelationship(parentContainerNode, "contained in", null);
+		}
 		
 		return super.startContainer(container);
 	}
