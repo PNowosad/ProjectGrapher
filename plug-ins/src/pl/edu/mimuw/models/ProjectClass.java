@@ -37,6 +37,7 @@ public class ProjectClass extends ProjectObject {
 		createNode(properties);
 		
 		List<String> labels = new ArrayList<String>();
+		labels.add("type");
 		labels.add(classType.getClassification().toString());
 		if (classType.isAbstract())
 			labels.add("abstract");

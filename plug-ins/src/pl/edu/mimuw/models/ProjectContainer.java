@@ -35,6 +35,7 @@ public class ProjectContainer extends ProjectObject {
 		
 		List<String> labels = new ArrayList<String>();
 		labels.add("container");
+		labels.add(container.getClassification().toString());
 		this.addLabels(labels);
 	}
 
