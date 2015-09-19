@@ -32,5 +32,12 @@ public class ProjectNamespace extends ProjectObject {
 		createNode(new HashMap<String, String>());
 		addLabel("namespace");
 	}
+	
+	public ProjectNamespace(WebTarget rootTarget, String namespaceName, String namespaceContextName, List<JSONObject> externalData) {
+		super(rootTarget, namespaceName, namespaceContextName, externalData);
+		
+		createNode(new HashMap<String, String>());
+		addLabel("namespace");
+	}
 
 }

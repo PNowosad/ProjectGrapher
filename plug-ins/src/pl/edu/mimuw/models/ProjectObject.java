@@ -57,11 +57,28 @@ public abstract class ProjectObject {
 	 * @param object		obiekt, którym zostanie zainicjalizowany model
 	 * @param externalData	dodatkowe dane, które zostaną przypisane do wierzchołka
 	 */
-	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object, List<JSONObject> externalData) {;
+	public ProjectObject(WebTarget rootTarget, IExplorationModelObject object, List<JSONObject> externalData) {
 		nodeTarget = rootTarget.path("node");
 		
 		name = object.getName();
 		contextName = object.getContext().getName();
+		
+		this.externalData = externalData;
+	}
+	
+	/**
+	 * Odpowiada za zainicjalizowanie i przetworzenie danych o elemencie oraz zapisanie go w grafowej bazie danych bez użycia obiektu
+	 * 
+	 * @param rootTarget			główny adres do REST API grafowej bazy danych
+	 * @param objectName			nazwa obiektu
+	 * @param objectContextName		nazwa kontekstu, w którym znajduje się obiekt
+	 * @param externalData			dodatkowe dane, które zostaną przypisane do wierzchołka
+	 */
+	public ProjectObject(WebTarget rootTarget, String objectName, String objectContextName, List<JSONObject> externalData) {
+		nodeTarget = rootTarget.path("node");
+		
+		name = objectName;
+		contextName = objectContextName;
 		
 		this.externalData = externalData;
 	}
@@ -116,18 +133,20 @@ public abstract class ProjectObject {
 		
 		List<String> initLabels = new ArrayList<String>();
 		
-		for (JSONObject objectJsonInfo : externalData) {
-			if (objectJsonInfo.has(ExtDataProperties)) {
-				JSONObject jsonProperties = objectJsonInfo.getJSONObject(ExtDataProperties);
-				for (String key : JSONObject.getNames(jsonProperties)) {
-					this.properties.put(key, jsonProperties.get(key).toString());
+		if (externalData != null) {
+			for (JSONObject objectJsonInfo : externalData) {
+				if (objectJsonInfo.has(ExtDataProperties)) {
+					JSONObject jsonProperties = objectJsonInfo.getJSONObject(ExtDataProperties);
+					for (String key : JSONObject.getNames(jsonProperties)) {
+						this.properties.put(key, jsonProperties.get(key).toString());
+					}
 				}
-			}
-			
-			if (objectJsonInfo.has(ExtDataLabels)) {
-				JSONArray jsonLabels = objectJsonInfo.getJSONArray(ExtDataLabels);
-				for (int i = 0; i < jsonLabels.length(); i++) {
-					initLabels.add(jsonLabels.get(i).toString());
+				
+				if (objectJsonInfo.has(ExtDataLabels)) {
+					JSONArray jsonLabels = objectJsonInfo.getJSONArray(ExtDataLabels);
+					for (int i = 0; i < jsonLabels.length(); i++) {
+						initLabels.add(jsonLabels.get(i).toString());
+					}
 				}
 			}
 		}

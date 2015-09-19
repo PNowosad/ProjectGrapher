@@ -178,7 +178,8 @@ public class Neo4jExporter extends AModelExporter {
 	 */
 	@Override
 	public boolean finishContext(IExplorationContext context) {
-		for (String namespaceString : namespaceMap.keySet()) {
+		Set<String> namespaceKeySet = new HashSet<String>(namespaceMap.keySet());
+		for (String namespaceString : namespaceKeySet) {
 			ProjectNamespace namespace = namespaceMap.get(namespaceString);
 			
 			String nsString = new String(namespaceString);
@@ -190,7 +191,14 @@ public class Neo4jExporter extends AModelExporter {
 					nsString = "";
 				
 				ProjectNamespace superNamespace = namespaceMap.get(nsString);
-				if (superNamespace != null) {
+				if (superNamespace == null) {
+					superNamespace = new ProjectNamespace(rootTarget, nsString, namespace.contextName, null);
+					namespaceMap.put(nsString, superNamespace);
+					
+					namespace.createRelationship(superNamespace, "subnamespace", null);
+					namespace = superNamespace;
+				}
+				else {
 					namespace.createRelationship(superNamespace, "subnamespace", null);
 					
 					break;
